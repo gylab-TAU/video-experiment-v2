@@ -1,33 +1,30 @@
-import * as stimTrial from "../components/imageKeyComponent";
+import * as stimTrial from "../components/videoSliderComponent";
+import TimeService from "../Services/TimeService";
 
 export class showStimProcedure {
-    constructor(stimFolder, stimImageName, numOfStims, fileExtension) {
-        this.stimFolder = stimFolder;
-        this.stimImageName = stimImageName;
-        this.numOfStims = numOfStims;
-        this.fileExtension = fileExtension;
-    }
-
-    getProcedure() {
+    getProcedure(videos) {
         let procedure = {
-            timeline: [stimTrial.default.getTrial()],
-            timeline_variables: this.getTimelineVariables(),
-            randomize_order: true
+            timeline: this.getTrials(videos),
+            randomize_order: false
         }
 
         return procedure;
     }
 
-    getTimelineVariables() {
-        let timelineVariables = [];
+    getTrials(videos) {
+        let trials = [];
 
-        for (let i = 1; i <= this.numOfStims; i++) {
-            let path = "media/images/" + this.stimFolder + "/" + this.stimImageName + i + "." + this.fileExtension;
-            let pathObject = {path: path};
+        let times = new TimeService().getStopTimes();
 
-            timelineVariables.push(pathObject);
+        for (let i = 0; i < times.length; i++) {
+            let start = i == 0 ? null : times[i - 1].time;
+            let stop = i == times.length ? null : times[i].time;
+            let id = times[i].ID;
+            let trial = stimTrial.default.getTrial(videos, start, stop, id)
+
+            trials.push(trial);
         }
 
-        return timelineVariables;
+        return trials;
     }
 }

@@ -8,19 +8,22 @@
  * or just delete them.
  * @imageDir images
  * @miscDir html
+ * @videoDir videos
  */
 
 // You can import stylesheets (.scss or .css).
 import "../styles/main.scss";
 
 import * as consent from "./components/consentComponent";
-import * as id from "./components/idComponent";
 import * as instructions from "./components/instructionsComponent";
 import * as participantDetails from "./components/participantDetailsComponent";
 
 import { showStimProcedure } from "./procedures/showStimProcedure";
 
-import axios from "axios";
+import EgoziService from "./Services/EgoziService";
+import NutellaService from "./Services/NutellaService";
+import DataService from "./Services/DataService";
+import IdFromUrlService from "./Services/IdFromUrlService";
 
 import { initJsPsych } from "jspsych";
 
@@ -42,13 +45,26 @@ export async function run({ assetPaths, input = {}, environment }) {
 
   const timeline = [];
 
+  let video_names = ["./media/videos/video.mp4"];
+
   // Preload assets
   timeline.push({
     type: PreloadPlugin,
-    images: assetPaths.images
+    images: assetPaths.images,
+    video: assetPaths.videos
   });
 
-  timeline.push(id.default.getTrial());
+  let getParticipantIdFromUrl = {
+    type: CallFunctionPlugin,
+    func: () => { 
+        let id = IdFromUrlService.getId();
+        let data = {participantId: id}
+        jsPsych.data.get().push(data);
+     }
+  }
+
+  timeline.push(getParticipantIdFromUrl);
+
   timeline.push(participantDetails.default.getTrial());
   timeline.push(consent.default.getConsentTrial())
 
@@ -58,27 +74,27 @@ export async function run({ assetPaths, input = {}, environment }) {
     fullscreen_mode: true,
   });
 
+
   document.addEventListener("fullscreenchange", fullScreenChangeHandler)
 
   timeline.push(instructions.default.getTrial());
 
-  timeline.push((new showStimProcedure("stimuli", "stim", 4, "jpg")).getProcedure());
+  timeline.push((new showStimProcedure()).getProcedure(video_names));
 
 
-  let sendData = {
+  let sendDataToServer = {
     type: CallFunctionPlugin,
     func: () => { 
       document.removeEventListener("fullscreenchange", fullScreenChangeHandler)
 
-      let first_trial = jsPsych.data.get().values()[0];
+      let first_trial = jsPsych.data.get().values()[1];
       let participantId = first_trial["participantId"];
-      console.log(participantId)
-      console.log(jsPsych.data.get().values())
-      sendDataToNutella("Gali", "jspsych-attempt", jsPsych.data.get().values(), participantId);
+      
+      sendData("galit", "jspsych-try", jsPsych.data.get(), participantId);
      }
   }
 
-  timeline.push(sendData);
+  timeline.push(sendDataToServer);
 
   let endMessage = {
     type: HtmlKeyboardResponsePlugin,
@@ -98,25 +114,8 @@ function fullScreenChangeHandler() {
   }
 }
 
-function sendDataToNutella(experimenterName, experimentName, data, participantId) {
-  let postObject = {
-    "data": {
-      "participant_info": {
-        "participant_id": participantId,
-      },
-      "time": Date.now(),
-      "headers": ["fake hraders"],
-      "trials": data,
-      "experiment_info": {
-        "experimenter_name": experimenterName,
-        "experiment_name": experimentName
-      },
-      "others": {}
-    }
-  }
-  axios.post("http://178.62.106.190/saveResults/", postObject).then(() => {
-    return true;
-  }).catch(() => {
-    return false;
-  });
+function sendData(experimenterName, experimentName, data, participantId) {  
+  data = DataService.getDataAsArray(data);
+  NutellaService.sendDataToNutella(experimentName, experimenterName, data, participantId);
+  EgoziService.sendDataToEgozi(experimentName, experimenterName, data, participantId);
 }
