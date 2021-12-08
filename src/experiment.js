@@ -90,7 +90,7 @@ export async function run({ assetPaths, input = {}, environment }) {
       let first_trial = jsPsych.data.get().values()[1];
       let participantId = first_trial["participantId"];
       
-      sendData("galit", "jspsych-try", jsPsych.data.get(), participantId);
+      sendData("galit", "jspsych-video-experiment-ver2", jsPsych.data.get(), participantId);
      }
   }
 

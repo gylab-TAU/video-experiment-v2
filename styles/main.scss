@@ -7,3 +7,20 @@
 body {
   direction: rtl;
 }
+
+#prompt{
+  order:-1;
+}
+
+#jspsych-video-slider-response-stimulus-video{
+  height: 60%;
+}
+
+#jspsych-video-slider-response-wrapper {
+  margin: 0 !important;
+}
+
+#jspsych-content {
+  display: flex;
+  flex-direction: column;
+}
