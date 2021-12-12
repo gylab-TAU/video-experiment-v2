@@ -19,7 +19,7 @@ class instructionsComponent {
         let tagsArray = [];
         
         for (let i = 1; i <= 1; i++) {
-            tagsArray.push('<img src="media/images/instructions/instructions' + i + '.jpg" style="max-width:' + window.screen.availWidth + "px; max-height:" + (window.screen.availHeight - 50) +  'px;">');
+            tagsArray.push('<img src="media/images/instructions/instructions' + i + '.png" style="max-width:' + window.screen.availWidth + "px; max-height:" + (window.screen.availHeight - 50) +  'px;">');
         }
 
         return tagsArray;
