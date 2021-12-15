@@ -45,13 +45,14 @@ export async function run({ assetPaths, input = {}, environment }) {
 
   const timeline = [];
 
-  let video_names = ["./media/videos/video.mp4"];
+  let video_names = ["https://media.githubusercontent.com/media/gylab-TAU/video-experiment-prod/master/media/videos/video.mp4"];
 
   // Preload assets
   timeline.push({
     type: PreloadPlugin,
     images: assetPaths.images,
-    video: assetPaths.videos
+    video: video_names,
+    message: "Loading, please wait"
   });
 
   let getParticipantIdFromUrl = {
